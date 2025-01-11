@@ -1,0 +1,9 @@
+lib*
+include*
+pyenv*
+*.in
+*.log
+bin/
+bin*
+data/
+*pyvenv*

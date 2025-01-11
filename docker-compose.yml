@@ -1,0 +1,23 @@
+services:
+
+  mongo:
+    image: postgres:17
+    restart: always
+    container_name: postgres
+    shm_size: 128mb
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
+      PGDATA: /var/lib/postgresql/data/pgdata
+      #   remain this only if you want a mongoDB to be accesible from your LAN
+    ports:
+      - 5432:5432
+    volumes:
+      - ./data:/var/lib/postgresql/data
+
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
