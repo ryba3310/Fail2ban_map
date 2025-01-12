@@ -2,6 +2,7 @@
 
 
 This a containerized app which gathers data about bans, attemps and fails from fail2ban.log and stores the data in PostgreSQL for retrival to Grafana dasboard.
+Data model for this log seems to better fit NoSQL like MongoDB but MongoDB connection in Grafana is only available in Grafana Enterprise
 
 
 # How to use
@@ -13,7 +14,7 @@ Run docker-compose to setup containres
 ```
 docker-compose up -d
 ```
-Setup MongoDB connetion in Grafana and Import dashbaord with with JSON file
+Setup PostgresSQL  connetion in Grafana and Import dashbaord with with JSON file
 
 
 # TODO
@@ -26,18 +27,26 @@ Setup MongoDB connetion in Grafana and Import dashbaord with with JSON file
 
 - ✅️ Use psycopg2 module for DB client
 
-- ⚠️ Set path globbing for fail2ban log files
+- ⚠️  Set path globbing for fail2ban log files
 
-- ⚠️ Setup dashboard in Grafana
+- ✅️  Add Grafana user with read-only rights
 
-- ⚠️ Parse and add more granuality to parsed data
+- ⚠️  Setup dashboard in Grafana
 
-- ⚠️ Seperate diffrent jails
+- ✅️  Check DB if ip metadata is already inserted and abort API request
 
-- ⚠️ Switch to SQLAlchemy ORM model
+- ⚠️  Add option to recheck all metadata for all ips in DB
 
-- ⚠️ Find and delete unbanned records from DB
+- ⚠️  Add GitHub actions CI/CD pipeline
 
-- ⚠️ Prepare Dockerfile and docker-compose file
+- ✅️  Use python generator
 
-- ⚠️ Get core functionality and tidy up code
+- ✅️  Parse and add more granuality to parsed data
+
+- ⚠️  Seperate diffrent jails
+
+- ⚠️  Switch to SQLAlchemy ORM model
+
+- ⚠️  Prepare Dockerfile and docker-compose file
+
+- ⚠️  Get core functionality and tidy up code
