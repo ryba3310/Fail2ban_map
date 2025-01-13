@@ -27,15 +27,15 @@ Setup PostgresSQL  connetion in Grafana and Import dashbaord with with JSON file
 
 - ✅️ Use psycopg2 module for DB client
 
-- ⚠️  Set path globbing for fail2ban log files
+- ✅️  Add access to log file through docker
 
 - ✅️  Add Grafana user with read-only rights
 
-- ⚠️  Setup dashboard in Grafana
+- ✅️  Setup dashboard in Grafana
 
 - ✅️  Check DB if ip metadata is already inserted and abort API request
 
-- ⚠️  Add option to recheck all metadata for all ips in DB
+- ✅️  Add option to recheck all metadata for all ips in DB
 
 - ⚠️  Add GitHub actions CI/CD pipeline
 
@@ -43,10 +43,10 @@ Setup PostgresSQL  connetion in Grafana and Import dashbaord with with JSON file
 
 - ✅️  Parse and add more granuality to parsed data
 
-- ⚠️  Seperate diffrent jails
+- ✅️  Seperate diffrent jails
 
 - ⚠️  Switch to SQLAlchemy ORM model
 
-- ⚠️  Prepare Dockerfile and docker-compose file
+- ✅️  Prepare Dockerfile and docker-compose file
 
 - ⚠️  Get core functionality and tidy up code
