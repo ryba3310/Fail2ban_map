@@ -2,7 +2,8 @@
 
 
 This a containerized app which gathers data about bans, attemps and fails from fail2ban.log and stores the data in PostgreSQL for retrival to Grafana dasboard.
-Data model for this log seems to better fit NoSQL like MongoDB but MongoDB connection in Grafana is only available in Grafana Enterprise
+It uses docker-compose to build and deploy containers and allow Grafana to connect to PostgreSQL endpoint.
+Data model for this log seems to better fit NoSQL like MongoDB but MongoDB connection in Grafana is only available in Grafana Enterprise.
 
 
 # How to use
