@@ -4,7 +4,10 @@ services:
     image: postgres:17
     restart: unless-stopped
     container_name: postgres
-    shm_size: 128mb
+    shm_size: 64mb
+    mem_limit: 20m
+    memswap_limit: 300m
+    mem_swappiness: 80
     environment:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: password
@@ -16,6 +19,9 @@ services:
       - ./data:/var/lib/postgresql/data
 
   parse_log:
+    mem_limit: 20m
+    memswap_limit: 300m
+    mem_swappiness: 80
     build:
       context: .
       dockerfile: Dockerfile
@@ -26,6 +32,9 @@ services:
 
   adminer:
     image: adminer
+    mem_limit: 20m
+    memswap_limit: 300m
+    mem_swappiness: 80
     restart: always
     ports:
       - 8080:8080

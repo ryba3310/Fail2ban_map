@@ -38,7 +38,7 @@ Setup PostgresSQL  connetion in Grafana and Import dashbaord with with JSON file
 
 - ✅️  Add option to recheck all metadata for all ips in DB
 
-- ⚠️  Add GitHub actions CI/CD pipeline
+- ✅️  Add GitHub actions CI/CD pipeline
 
 - ✅️  Use python generator
 
@@ -50,4 +50,4 @@ Setup PostgresSQL  connetion in Grafana and Import dashbaord with with JSON file
 
 - ✅️  Prepare Dockerfile and docker-compose file
 
-- ⚠️  Get core functionality and tidy up code
+- ✅️  Get core functionality and tidy up code
