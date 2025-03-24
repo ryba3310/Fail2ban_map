@@ -8,3 +8,5 @@ bin*
 data/
 *pyvenv*
 deploy*
+*.swp
+*.sql
