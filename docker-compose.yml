@@ -5,8 +5,8 @@ services:
     restart: unless-stopped
     container_name: postgres
     shm_size: 64mb
-    mem_limit: 50m
-    memswap_limit: 300m
+    mem_limit: 20m
+    memswap_limit: 50m
     mem_swappiness: 20
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -19,8 +19,8 @@ services:
       - ./data:/var/lib/postgresql/data
 
   parse_log:
-    mem_limit: 40m
-    memswap_limit: 300m
+    mem_limit: 20m
+    memswap_limit: 100m
     mem_swappiness: 20
     build:
       context: .
@@ -33,7 +33,7 @@ services:
   adminer:
     image: adminer
     mem_limit: 20m
-    memswap_limit: 300m
+    memswap_limit: 50m
     mem_swappiness: 80
     restart: unless-stopped
     ports:
