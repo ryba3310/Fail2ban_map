@@ -4,6 +4,7 @@ import os
 
 POSTGRES_USER = POSTGRES_DB = os.environ['POSTGRES_USER']    # Postgres Docker image sets db name as users name by default
 POSTGRES_PASSWORD = os.environ['POSTGRES_PASSWORD']
+POSTGRES_HOST = os.environ['POSTGRES_HOST']
 
 
 try:
@@ -11,7 +12,7 @@ try:
     POSTGRES_DB,  # Required by Peewee.
     user=POSTGRES_USER,  # Will be passed directly to psycopg2.
     password=POSTGRES_PASSWORD,  # Ditto.
-    host='localhost',  # Ditto
+    host=POSTGRES_HOST,  # Ditto
     port=5432)
 except psycopg2.OperationalError as err:
     print('Couldn\'t connect to database, exiting...' )

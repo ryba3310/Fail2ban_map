@@ -1,3 +1,5 @@
+version: '3.3'
+
 services:
 
   postgresql:
@@ -12,23 +14,29 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: /var/lib/postgresql/data/pgdata
-      #   remain this only if you want a mongoDB to be accesible from your LAN
     ports:
       - 5432:5432
     volumes:
       - ./data:/var/lib/postgresql/data
+    networks:
+      - postgres
 
   parse_log:
     mem_limit: 20m
     memswap_limit: 100m
     mem_swappiness: 20
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: ${POSTGRES_HOST}
     build:
       context: .
       dockerfile: Dockerfile
     volumes:
       - /var/log/fail2ban.log:/app/fail2ban.log
     restart: unless-stopped
-  
+    networks:
+      - postgres
 
   adminer:
     image: adminer
@@ -38,3 +46,9 @@ services:
     restart: unless-stopped
     ports:
       - 8080:8080
+    networks:
+      - postgres
+
+networks:
+  postgres:
+    driver: bridge
