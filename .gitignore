@@ -10,3 +10,4 @@ data/
 deploy*
 *.swp
 *.sql
+__pycache__/

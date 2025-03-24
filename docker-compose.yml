@@ -6,11 +6,11 @@ services:
     container_name: postgres
     shm_size: 64mb
     mem_limit: 20m
-    memswap_limit: 300m
-    mem_swappiness: 80
+    memswap_limit: 50m
+    mem_swappiness: 20
     environment:
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: password
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: /var/lib/postgresql/data/pgdata
       #   remain this only if you want a mongoDB to be accesible from your LAN
     ports:
@@ -20,8 +20,8 @@ services:
 
   parse_log:
     mem_limit: 20m
-    memswap_limit: 300m
-    mem_swappiness: 80
+    memswap_limit: 100m
+    mem_swappiness: 20
     build:
       context: .
       dockerfile: Dockerfile
@@ -33,8 +33,8 @@ services:
   adminer:
     image: adminer
     mem_limit: 20m
-    memswap_limit: 300m
+    memswap_limit: 50m
     mem_swappiness: 80
-    restart: always
+    restart: unless-stopped
     ports:
       - 8080:8080
