@@ -1,64 +1,13 @@
 from signal import signal, SIGINT
 from json.decoder import JSONDecodeError
 from collections import namedtuple
+from orm_helpers import *
 import requests
 import time
-import psycopg2
-from peewee import *
-import os
 
 
 LOG_PATH = '/app/fail2ban.log'
 IP_API = 'http://ip-api.com/json/'
-POSTGRES_USER = POSTGRES_DB = os.environ['POSTGRES_USER']    # Postgres Docker image sets db name as users name by default
-POSTGRES_PASSWORD = os.environ['POSTGRES_PASSWORD']
-
-
-try:
-    db = PostgresqlDatabase(
-    POSTGRES_DB,  # Required by Peewee.
-    user=POSTGRES_USER,  # Will be passed directly to psycopg2.
-    password=POSTGRES_PASSWORD,  # Ditto.
-    host='localhost',  # Ditto
-    port=5432)
-except psycopg2.OperationalError as err:
-    print('Couldn\'t connect to database, exiting...' )
-    print(err)
-    exit(1)
-
-
-class BaseModel(Model):
-    class Meta:
-        database = db
-
-
-class Client(BaseModel):
-    ip = CharField(unique=True)
-    country = CharField(max_length=255)
-    region_name = CharField(max_length=255)
-    city = CharField(max_length=255)
-    lat = CharField(max_length=10)
-    lon = CharField(max_length=10)
-    isp = CharField(max_length=255)
-    org = CharField(max_length=255)
-    asn = CharField(max_length=255)
-    date = DateTimeField()
-
-
-class Attempt(BaseModel):
-    client = ForeignKeyField(Client, backref='attempts')
-    attempted_at = DateTimeField()
-
-
-class Ban(BaseModel):
-    client = ForeignKeyField(Client, backref='bans')
-    jail = CharField(max_length=20)
-    banned_at = DateTimeField()
-
-
-def create_tables():
-    with db:
-        db.create_tables([Client, Attempt, Ban])
 
 
 def get_ip_data(ip):
@@ -74,7 +23,7 @@ def insert_host(host_metadata, attempt_data):
     print('Inserting:')
     print(host_metadata, end=' ')
     print(" Date: " + attempt_data[1])
-    ################# ORM
+
     try:
         client = (Client.insert(ip=attempt_data.ip, country=host_metadata['country'], region_name=host_metadata['region'],
                                city=host_metadata['city'], lat=host_metadata['lat'], lon=host_metadata['lon'],
@@ -99,8 +48,7 @@ def follow_generator(log_file):
 
 
 def parse_line(line):
-    """Only look for Bans and Attemps(Notice) in log and save host and timestamp"""
-
+    """Only look for Bans and Attempts(Notice) in log and save host and timestamp"""
     banned = False
     Attempt_data = namedtuple('Attempt_data', ['ip', 'timestamp', 'jail', 'banned'])
     if 'Ban' in line:
@@ -140,5 +88,3 @@ if __name__ == '__main__':
                 host_metadata = get_ip_data(attempt_data[0])
             insert_host(host_metadata, attempt_data)
 
-    cur.close()
-    conn.close()
