@@ -2,11 +2,18 @@ from signal import signal, SIGINT
 import requests
 import time
 import psycopg2
+from peewee import *
 
 
 LOG_PATH = '/app/fail2ban.log'
 IP_API = 'http://ip-api.com/json/'
 
+
+class BaseModel(Model):
+    class Meta:
+        database = db
+
+####################### ORM
 try:
     conn = psycopg2.connect(dbname='postgres', host='postgres', user='root', password='password')
     cur = conn.cursor()
@@ -22,7 +29,9 @@ def get_ip_data(ip):
 
 def insert_host(host_metadata, attempt_data):
     print('Inserting:')
-    print(host_metadata)
+    print(host_metadata, end=' ')
+    print(" Date: " + attempt_data[1])
+    ################# ORM
     try:
         cur.execute('INSERT INTO f2b (ip, banned, country, region_name, city, lat, lon, isp, org, asn, date, jail, attempts_num) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)\
             ON CONFLICT (id) DO UPDATE SET banned = excluded.banned, date = excluded.date',\
@@ -33,11 +42,14 @@ def insert_host(host_metadata, attempt_data):
         print('Cannot insert')
         print(err)
 
+############### Fix function name
 def check_if_inserted(attempt_data):
+    ###############ORM
     cur.execute('SELECT ip FROM f2b WHERE date >= %s', (attempt_data[1],))
     record = cur.fetchone()
     if record == None:
         return False
+    #################FIX and ORM
     # Update attempt count if host read from log is already inserted
     cur.execute('UPDATE f2b SET attempts_num = attempts_num + 1 WHERE date < %s AND ip = %s', (attempt_data[1], attempt_data[0]))
     return True
@@ -55,6 +67,7 @@ def get_ip_timestamp_jail(line):
     ip = line[7]
     timestamp = line[0] + ' ' + line[1][0:8]
     jail = line[5]
+    ############# Return tuple
     return [ip, timestamp, jail]
 
 def parse_line(line):
@@ -69,6 +82,7 @@ def parse_line(line):
     else:
         return None
     # tuple = (ip_addr, timestamp, jail_name, banned(boolean))
+    ################# the var will be tuple from function call
     return tuple(ip_timestamp_jail)
 
 def handle_SIGINT(sig, frame):
@@ -83,6 +97,7 @@ if __name__ == '__main__':
         rate_limit = 0  # Rate limit value set by ip-api for free access is set to 45 reqests per minute
         signal(SIGINT, handle_SIGINT)
         for line in lines:
+            print(line)
             attempt_data = parse_line(line)
             if not attempt_data:
                 continue
