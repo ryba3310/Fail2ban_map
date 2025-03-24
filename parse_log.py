@@ -3,29 +3,65 @@ import requests
 import time
 import psycopg2
 from peewee import *
+import os
 
 
 LOG_PATH = '/app/fail2ban.log'
 IP_API = 'http://ip-api.com/json/'
+POSTGRES_USER = POSTGRES_DB = os.environ['POSTGRES_USER']    # Postgres Docker image sets db name as users name by default
+POSTGRES_PASSWORD = os.environ['POSTGRES_PASSWORD']
+
+try:
+    db = PostgresqlDatabase(
+    POSTGRES_DB,  # Required by Peewee.
+    user=POSTGRES_USER,  # Will be passed directly to psycopg2.
+    password=POSTGRES_PASSWORD,  # Ditto.
+    host='localhost',  # Ditto
+    port=5432)
+except psycopg2.OperationalError as err:
+    print('Couldn\'t connect to database, exiting...' )
+    print(err)
+    exit(1)
 
 
 class BaseModel(Model):
     class Meta:
         database = db
 
-####################### ORM
-try:
-    conn = psycopg2.connect(dbname='postgres', host='postgres', user='root', password='password')
-    cur = conn.cursor()
-    cur.execute('CREATE TABLE IF NOT EXISTS f2b (id SERIAL, ip VARCHAR(15) NOT NULL, banned BOOLEAN DEFAULT true NOT NULL, country VARCHAR(255) NOT NULL, region_name VARCHAR(255),\
-        city VARCHAR(255), lat VARCHAR(10) NOT NULL, lon VARCHAR(10) NOT NULL, isp VARCHAR(255), org VARCHAR(255), asn VARCHAR(255), date TIMESTAMP, jail VARCHAR(20), attempts_num INT NOT NULL DEFAULT 1, PRIMARY KEY(id))')
-except psycopg2.OperationalError as err:
-    print('Couldn\'t connect to database, exiting...' )
-    exit(1)
+
+class Client(BaseModel):
+    ip = CharField(unique=True)
+    country = CharField(max_length=255)
+    region_name = CharField(max_length=255)
+    city = CharField(max_length=255)
+    lat = CharField(max_length=10)
+    lon = CharField(max_length=10)
+    isp = CharField(max_length=255)
+    org = CharField(max_length=255)
+    asn = CharField(max_length=255)
+    date = DateTimeField()
+
+
+class Attempt(BaseModel):
+    client = ForeignKeyField(Client, backref='attempts')
+    attempted_at = DateTimeField()
+
+
+class Ban(BaseModel):
+    client = ForeignKeyField(Client, backref='bans')
+    jail = CharField(max_length=20)
+    banned_at = DateTimeField()
+
+
+def create_tables():
+    with db:
+        db.create_tables([Client, Attempt, Ban])
+
 
 def get_ip_data(ip):
     host_metadata = requests.get(f'{IP_API}{ip}')
     return host_metadata.json()
+
 
 def insert_host(host_metadata, attempt_data):
     print('Inserting:')
@@ -33,14 +69,27 @@ def insert_host(host_metadata, attempt_data):
     print(" Date: " + attempt_data[1])
     ################# ORM
     try:
-        cur.execute('INSERT INTO f2b (ip, banned, country, region_name, city, lat, lon, isp, org, asn, date, jail, attempts_num) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)\
-            ON CONFLICT (id) DO UPDATE SET banned = excluded.banned, date = excluded.date',\
-            (attempt_data[0], attempt_data[3], host_metadata['country'], host_metadata['regionName'], host_metadata['city'], host_metadata['lat'], host_metadata['lon'], host_metadata['isp'], \
-            host_metadata['org'], host_metadata['as'], attempt_data[1], attempt_data[2], '1'))
-        conn.commit()
-    except Exception as err:
-        print('Cannot insert')
-        print(err)
+        client = (Client.insert(ip=attempt_data[0], country=host_metadata['country'], region_name=host_metadata['region'],
+                               city=host_metadata['city'], lat=host_metadata['lat'], lon=host_metadata['lon'],
+                               isp=host_metadata['isp'], org=host_metadata['org'], asn=host_metadata['as'], date=attempt_data[1])
+                  .on_conflict(conflict_target=[Client.ip], update={Client.lat: host_metadata['lat']})
+                      .execute())
+        attempt = Attempt.create(client=client, date=attempt_data[1])
+    except IntegrityError as err:
+        print('Client already inserted, updateing attempt...\n')
+        #attempt = Attempt.create(client=client, date=attempt_data[1])
+        #attempt = Attempt.update(client=client, date=date).where(Client.ip == attempt_data[0])
+        #if attempt_data[3]:
+        #    ban = Ban.create(client=client, jail=attempt_data[2], banned_at=attempt_data[1])
+#    try:
+#        cur.execute('INSERT INTO f2b (ip, banned, country, region_name, city, lat, lon, isp, org, asn, date, jail, attempts_num) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)\
+#            ON CONFLICT (id) DO UPDATE SET banned = excluded.banned, date = excluded.date',\
+#            (attempt_data[0], attempt_data[3], host_metadata['country'], host_metadata['regionName'], host_metadata['city'], host_metadata['lat'], host_metadata['lon'], host_metadata['isp'], \
+#            host_metadata['org'], host_metadata['as'], attempt_data[1], attempt_data[2], '1'))
+#        conn.commit()
+#    except Exception as err:
+#        print('Cannot insert')
+#        print(err)
 
 ############### Fix function name
 def check_if_inserted(attempt_data):
@@ -101,8 +150,8 @@ if __name__ == '__main__':
             attempt_data = parse_line(line)
             if not attempt_data:
                 continue
-            if check_if_inserted(attempt_data):
-                continue
+        #    if check_if_inserted(attempt_data):
+        #        continue
             host_metadata = get_ip_data(attempt_data[0])
             insert_host(host_metadata, attempt_data)
             rate_limit += 1

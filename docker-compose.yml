@@ -9,8 +9,8 @@ services:
       #    memswap_limit: 300m
       #    mem_swappiness: 20
     environment:
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: password
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: /var/lib/postgresql/data/pgdata
       #   remain this only if you want a mongoDB to be accesible from your LAN
     ports:
@@ -35,6 +35,6 @@ services:
     mem_limit: 20m
     memswap_limit: 300m
     mem_swappiness: 80
-    restart: always
+    restart: unless-stopped
     ports:
       - 8080:8080
