@@ -46,8 +46,12 @@ Setup PostgresSQL  connetion in Grafana and Import dashbaord with with JSON file
 
 - ✅️  Seperate diffrent jails
 
-- ⚠️  Switch to SQLAlchemy ORM model
+- ✅️  Switch to SQLAlchemy ORM model
 
 - ✅️  Prepare Dockerfile and docker-compose file
 
 - ✅️  Get core functionality and tidy up code
+
+- ✅️  Add check to avoid remote API calls
+
+- ⚠️  Imporve DB model

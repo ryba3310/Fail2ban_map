@@ -2,9 +2,9 @@ from peewee import *
 import os
 
 
-POSTGRES_USER = POSTGRES_DB = os.environ['POSTGRES_USER']    # Postgres Docker image sets db name as users name by default
-POSTGRES_PASSWORD = os.environ['POSTGRES_PASSWORD']
-POSTGRES_HOST = os.environ['POSTGRES_HOST']
+POSTGRES_USER = POSTGRES_DB = os.getenv('POSTGRES_USER')    # Postgres Docker image sets db name as user's name by default
+POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
+POSTGRES_HOST = os.getenv('POSTGRES_HOST')
 
 
 try:
@@ -52,5 +52,3 @@ class Ban(BaseModel):
 def create_tables():
     with db:
         db.create_tables([Client, Attempt, Ban])
-
-

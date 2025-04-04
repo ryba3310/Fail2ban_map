@@ -1,6 +1,7 @@
 lib*
 include*
 pyenv*
+*.txt
 *.in
 *.log
 bin/
